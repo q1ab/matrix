@@ -35,62 +35,80 @@ export const Matrix = () => {
   };
 
   return (
-    <div className="p-4 min-h-screen pb-24">
-      <h1 className="text-2xl font-bold mb-6 text-center">Матрица Судьбы</h1>
+    <div className="min-h-screen pb-32 pt-6 px-4 relative overflow-hidden">
+       {/* Background Decor */}
+       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-600/10 rounded-full blur-[80px] pointer-events-none" />
 
-      <div className="flex gap-2 mb-6">
+      <h1 className="text-2xl font-bold mb-8 text-center text-white">Матрица Судьбы</h1>
+
+      <div className="glass-panel rounded-2xl p-4 mb-6">
+        <label className="text-xs text-gray-400 block mb-2 uppercase tracking-wide">Дата рождения</label>
         <input 
           type="date" 
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
-          className="flex-1 bg-mystic-purple rounded-lg px-4 py-2 border border-white/10"
+          className="w-full bg-mystic-dark/50 rounded-xl px-4 py-3 border border-white/10 text-white focus:outline-none focus:border-amber-500/50"
         />
       </div>
 
-      <div className="flex gap-3 mb-8">
+      <div className="flex gap-3 mb-10">
         <MysticButton 
+          variant="outline"
           className="flex-1" 
           onClick={() => fetchMatrix(false)}
           isLoading={loading}
           disabled={!birthDate}
         >
-          Мини (Lite)
+          Lite (Беспл.)
         </MysticButton>
         <MysticButton 
-          variant="secondary"
-          className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 !text-white"
+          className="flex-1 shadow-neon"
           onClick={() => fetchMatrix(true)}
           isLoading={loading}
           disabled={!birthDate}
         >
-          Полная (Pro)
+          Pro (Полная)
         </MysticButton>
       </div>
 
       {matrixData && (
-        <div className="animate-fade-in">
+        <div className="animate-fade-in space-y-8">
           {/* Visual Representation */}
-          <div className="relative w-64 h-64 mx-auto mb-6">
-             <div className="absolute inset-0 border-2 border-amber-500/50 rotate-45 transform bg-mystic-light/20" />
-             <div className="absolute inset-0 flex flex-col items-center justify-between py-2 rotate-0">
+          <div className="relative w-72 h-72 mx-auto">
+             {/* Diamond Background */}
+             <div className="absolute inset-4 border border-white/10 bg-white/5 rotate-45 rounded-3xl backdrop-blur-sm" />
+             <div className="absolute inset-12 border border-amber-500/20 rotate-45 rounded-xl" />
+             
+             {/* Numbers */}
+             <div className="absolute inset-0 flex flex-col items-center justify-between py-4 rotate-0 z-10 pointer-events-none">
                  {/* Top (Month) */}
-                 <span className="bg-mystic-dark p-1 rounded-full text-amber-400 font-bold">{matrixData.month}</span>
+                 <div className="bg-mystic-dark/90 px-3 py-1 rounded-full border border-purple-500/50 shadow-neon">
+                    <span className="text-purple-300 font-bold">{matrixData.month}</span>
+                 </div>
                  {/* Center */}
-                 <span className="bg-amber-500 text-mystic-dark p-2 rounded-full font-bold text-xl">{matrixData.center}</span>
+                 <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-mystic-dark w-14 h-14 rounded-full flex items-center justify-center font-bold text-2xl shadow-gold">
+                    {matrixData.center}
+                 </div>
                  {/* Bottom */}
-                 <span className="bg-mystic-dark p-1 rounded-full text-red-400 font-bold">{matrixData.bottom}</span>
+                 <div className="bg-mystic-dark/90 px-3 py-1 rounded-full border border-red-500/50">
+                    <span className="text-red-400 font-bold">{matrixData.bottom}</span>
+                 </div>
              </div>
-             <div className="absolute inset-0 flex items-center justify-between px-2 rotate-0">
+             <div className="absolute inset-0 flex items-center justify-between px-4 rotate-0 z-10 pointer-events-none">
                  {/* Left (Day) */}
-                 <span className="bg-mystic-dark p-1 rounded-full text-purple-400 font-bold">{matrixData.day}</span>
+                 <div className="bg-mystic-dark/90 px-3 py-1 rounded-full border border-blue-500/50">
+                    <span className="text-blue-300 font-bold">{matrixData.day}</span>
+                 </div>
                  {/* Right (Year) */}
-                 <span className="bg-mystic-dark p-1 rounded-full text-blue-400 font-bold">{matrixData.year}</span>
+                 <div className="bg-mystic-dark/90 px-3 py-1 rounded-full border border-green-500/50">
+                    <span className="text-green-300 font-bold">{matrixData.year}</span>
+                 </div>
              </div>
           </div>
 
-          <div className="bg-mystic-light/30 p-4 rounded-xl">
-            <h3 className="font-bold text-amber-400 mb-2">Совет Аркана</h3>
-            <p className="text-sm text-gray-200">{matrixData.advice}</p>
+          <div className="glass-panel rounded-2xl p-6 border-l-4 border-l-amber-500">
+            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-widest mb-3">Совет Аркана</h3>
+            <p className="text-sm text-gray-200 leading-relaxed">{matrixData.advice}</p>
           </div>
         </div>
       )}
