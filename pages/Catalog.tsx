@@ -26,9 +26,10 @@ export const Catalog = () => {
         if (status === 'paid') {
           TelegramService.haptic.notification('success');
           await refreshUser();
-          alert('Оплата прошла успешно! ✨');
-        } else if (status === 'cancelled') {
-           // Do nothing
+          // Use standard alert for now, or custom toast if available
+          TelegramService.showConfirm("Оплата успешна! Активировать сейчас?", (ok) => {
+             // Logic to redirect or refresh
+          });
         } else {
            TelegramService.haptic.notification('error');
         }
@@ -41,11 +42,20 @@ export const Catalog = () => {
   };
 
   return (
-    <div className="p-4 pb-24 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Магазин Энергии</h1>
+    <div className="min-h-screen pb-32 pt-6 px-4 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-40 right-0 w-80 h-80 bg-amber-600/10 rounded-full blur-[100px] pointer-events-none" />
+      
+      <div className="flex items-center gap-2 mb-8 justify-center">
+        <span className="text-2xl">🛍️</span>
+        <h1 className="text-2xl font-bold text-white">Магазин Энергии</h1>
+      </div>
       
       {loading ? (
-        <div className="text-center mt-10 text-gray-400">Загрузка каталога...</div>
+        <div className="flex flex-col items-center justify-center mt-20 space-y-4">
+           <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+           <p className="text-gray-400 text-sm">Загружаем артефакты...</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {products.map(p => (
