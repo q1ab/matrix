@@ -12,16 +12,23 @@
           extend: {
             colors: {
               mystic: {
-                dark: '#1a0b2e',
+                dark: '#0f0518', // Deeper dark for contrast
+                card: '#1e1235', // Card background
                 purple: '#2d1b4e',
                 light: '#432c7a',
                 gold: '#fbbf24',
-                goldDim: '#b48a1e',
+                goldDim: '#785c18', // For disabled buttons
                 text: '#e0d4fc',
+                accent: '#8b5cf6', // Violet accent
               }
             },
             fontFamily: {
               sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            },
+            boxShadow: {
+              'neon': '0 0 15px rgba(139, 92, 246, 0.3)',
+              'gold': '0 0 15px rgba(251, 191, 36, 0.3)',
+              'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
             }
           }
         }
@@ -29,14 +36,28 @@
     </script>
     <style>
       body {
-        background-color: #1a0b2e;
+        background-color: #0f0518;
+        background-image: radial-gradient(circle at 50% 0%, #2d1b4e 0%, #0f0518 70%);
         color: #e0d4fc;
         -webkit-font-smoothing: antialiased;
+        min-height: 100vh;
       }
       /* Hide scrollbar for clean mobile look */
       ::-webkit-scrollbar {
         width: 0px;
         background: transparent;
+      }
+      .glass-panel {
+        background: rgba(30, 18, 53, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .glass-nav {
+        background: rgba(15, 5, 24, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
       }
     </style>
   <script type="importmap">
@@ -51,7 +72,6 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
