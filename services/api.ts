@@ -14,13 +14,14 @@ const MOCK_USER: User = {
 };
 
 const MOCK_PRODUCTS: Product[] = [
-  { id: '3_card_spread', title: 'Расклад 3 карты', price: 199, type: 'consumable', description: ['Прошлое, настоящее, будущее', 'Совет карт'] },
-  { id: 'pro_spread', title: 'PRO-расклад 5–7 карт', price: 490, type: 'consumable', description: ['Глубокий анализ', 'Скрытые факторы'] },
-  { id: 'matrix_mini', title: 'Матрица MINI', price: 690, type: 'one-time', description: ['Таланты', 'Карма'] },
-  { id: 'matrix_pro', title: 'Матрица PRO (PDF)', price: 1290, type: 'one-time', description: ['Полная расшифровка', 'PDF отчет'], tag: 'Hit' },
-  { id: 'sub_light', title: 'Daily Light', price: 349, type: 'subscription', description: ['Карта дня', 'Гороскоп'] },
-  { id: 'sub_pro', title: 'Daily PRO', price: 699, type: 'subscription', description: ['Все функции', 'Личный оракул'] }
+  { id: 'TAROT_3', title: 'Расклад 3 карты', price: 199, type: 'consumable', description: ['Прошлое, настоящее, будущее', 'Совет карт'] },
+  { id: 'TAROT_PRO', title: 'PRO-расклад 5–7 карт', price: 490, type: 'consumable', description: ['Глубокий анализ', 'Скрытые факторы'] },
+  { id: 'MATRIX_MINI', title: 'Матрица MINI', price: 690, type: 'one-time', description: ['Таланты', 'Карма'] },
+  { id: 'MATRIX_PRO', title: 'Матрица PRO (PDF)', price: 1290, type: 'one-time', description: ['Полная расшифровка', 'PDF отчет'], tag: 'Hit' },
+  { id: 'SUB_LIGHT', title: 'Daily Light', price: 349, type: 'subscription', description: ['Карта дня', 'Гороскоп'] },
+  { id: 'SUB_PRO', title: 'Daily PRO', price: 699, type: 'subscription', description: ['Все функции', 'Личный оракул'] },
 ];
+
 
 // --- Helpers & Mappers ---
 
