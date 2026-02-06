@@ -1,6 +1,6 @@
 import { Product, TarotCard } from './types';
 
-export const API_BASE_URL = 'https://api.destinymatrix.ai/v1'; // Mock URL
+export const API_BASE_URL = 'https://api.omgcloud.ru';
 
 export const PRODUCTS: Product[] = [
   {
