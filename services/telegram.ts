@@ -39,27 +39,66 @@ declare global {
   }
 }
 
-export const tg = window.Telegram.WebApp;
+// Robust fallback mock for development in browser
+const mockTg = {
+  initData: '',
+  initDataUnsafe: {},
+  ready: () => console.log('[TG Mock] ready'),
+  expand: () => console.log('[TG Mock] expand'),
+  close: () => console.log('[TG Mock] close'),
+  MainButton: {
+    text: '',
+    color: '',
+    textColor: '',
+    isVisible: false,
+    show: () => {},
+    hide: () => {},
+    onClick: () => {},
+    offClick: () => {},
+    showProgress: () => {},
+    hideProgress: () => {},
+  },
+  BackButton: {
+    isVisible: false,
+    show: () => {},
+    hide: () => {},
+    onClick: () => {},
+    offClick: () => {},
+  },
+  HapticFeedback: {
+    impactOccurred: () => console.log('[TG Mock] Haptic impact'),
+    notificationOccurred: () => console.log('[TG Mock] Haptic notification'),
+    selectionChanged: () => console.log('[TG Mock] Haptic selection'),
+  },
+  openInvoice: (url: string, callback?: (status: string) => void) => {
+     console.log('[TG Mock] openInvoice:', url);
+     // Simulate successful payment in dev
+     if (callback) setTimeout(() => callback('paid'), 2000);
+  },
+  themeParams: {},
+};
+
+export const tg = window.Telegram?.WebApp || mockTg as any;
 
 export const initTelegram = () => {
-  tg.ready();
-  tg.expand();
-  // Set header color if needed
-  // tg.setHeaderColor('#1a0b2e'); 
+  if (window.Telegram?.WebApp) {
+      tg.ready();
+      tg.expand();
+  }
 };
 
 export const haptic = {
   impact: (style: 'light' | 'medium' | 'heavy' = 'medium') => {
-    tg.HapticFeedback.impactOccurred(style);
+    tg.HapticFeedback?.impactOccurred(style);
   },
   success: () => {
-    tg.HapticFeedback.notificationOccurred('success');
+    tg.HapticFeedback?.notificationOccurred('success');
   },
   error: () => {
-    tg.HapticFeedback.notificationOccurred('error');
+    tg.HapticFeedback?.notificationOccurred('error');
   },
   selection: () => {
-    tg.HapticFeedback.selectionChanged();
+    tg.HapticFeedback?.selectionChanged();
   }
 };
 
