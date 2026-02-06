@@ -2,7 +2,7 @@ import React from 'react';
 import { TelegramService } from '../services/telegram';
 
 interface MysticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'disabled-filled';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
   isLoading?: boolean;
@@ -27,12 +27,21 @@ export const MysticButton: React.FC<MysticButtonProps> = ({
     }
   };
 
-  const baseStyles = "relative rounded-xl font-medium transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
+  // Base styles
+  const baseStyles = "relative rounded-xl font-medium transition-all duration-200 active:scale-95 disabled:cursor-not-allowed";
   
   const variants = {
-    primary: "bg-gradient-to-r from-amber-500 to-amber-600 text-mystic-dark shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30",
-    secondary: "bg-mystic-light text-white hover:bg-opacity-80",
-    outline: "border border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+    // Bright Gold Gradient
+    primary: "bg-gradient-to-r from-amber-500 to-amber-600 text-mystic-dark shadow-lg shadow-amber-500/20 disabled:opacity-50",
+    
+    // Glass/Light
+    secondary: "bg-white/10 text-white hover:bg-white/20 disabled:opacity-50",
+    
+    // Outline
+    outline: "border border-amber-500/50 text-amber-400 hover:bg-amber-500/10 disabled:opacity-50",
+    
+    // Special variant for "Already Received" - looks disabled but filled with brown/gold-dim
+    'disabled-filled': "bg-mystic-goldDim/30 text-amber-500/60 border border-amber-500/10 shadow-none pointer-events-none"
   };
 
   const sizes = {
