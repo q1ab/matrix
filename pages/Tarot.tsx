@@ -2,24 +2,35 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import MysticButton from '../components/UI/MysticButton';
 import { haptic } from '../services/telegram';
+import { api } from '../services/api';
 
 const Tarot: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [state, setState] = useState<'input' | 'shuffling' | 'result'>('input');
   const [result, setResult] = useState<string>('');
+  const [loading, setLoading] = useState(false);
 
   const startReading = async () => {
     if (!question.trim()) return;
     
     haptic.impact('medium');
     setState('shuffling');
+    setLoading(true);
     
-    // Simulate API call to OpenAI via backend
-    setTimeout(() => {
-      setResult("Карты говорят, что сейчас отличное время для начинаний. Ваши усилия (Туз Жезлов) будут вознаграждены, если вы проявите терпение (Умеренность).");
-      haptic.success();
-      setState('result');
-    }, 3000);
+    try {
+        // Call Real API
+        const response = await api.getTarotReading(question);
+        setResult(response.result);
+        haptic.success();
+        setState('result');
+    } catch (e) {
+        console.error(e);
+        haptic.error();
+        alert("Не удалось получить ответ от карт. Проверьте баланс или попробуйте позже.");
+        setState('input');
+    } finally {
+        setLoading(false);
+    }
   };
 
   return (
@@ -36,10 +47,10 @@ const Tarot: React.FC = () => {
               onChange={(e) => setQuestion(e.target.value)}
             />
           </div>
-          <MysticButton fullWidth onClick={startReading} disabled={!question.trim()}>
-            Сделать расклад (199 ⭐)
+          <MysticButton fullWidth onClick={startReading} disabled={!question.trim() || loading} isLoading={loading}>
+            Сделать расклад
           </MysticButton>
-          <p className="text-center text-xs text-gray-500">Первый расклад бесплатно</p>
+          <p className="text-center text-xs text-gray-500">Списывается 1 кредит или 199 ⭐</p>
         </motion.div>
       )}
 
