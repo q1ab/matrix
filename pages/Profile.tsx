@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { MysticButton } from '../components/MysticButton';
 import { api } from '../api/client';
+import { Settings, Edit2, CheckCircle } from 'lucide-react';
 
 export const Profile = () => {
   const { user, entitlements, refreshUser } = useApp();
@@ -20,68 +20,93 @@ export const Profile = () => {
   };
 
   return (
-    <div className="p-4 pb-24 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Профиль</h1>
+    <div className="min-h-screen pb-32 pt-6 px-4 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/20 rounded-full blur-[80px] pointer-events-none" />
 
-      {/* User Info */}
-      <div className="bg-mystic-purple/50 rounded-xl p-4 mb-6 border border-white/5">
-         <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold">
+      <h1 className="text-2xl font-bold mb-6 text-center text-white">Профиль</h1>
+
+      {/* User Info Card */}
+      <div className="glass-panel rounded-2xl p-6 mb-8 relative overflow-hidden">
+         {/* Decorative circle */}
+         <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+
+         <div className="flex items-center gap-5 mb-6 relative z-10">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg text-white border-2 border-white/10">
                {user?.first_name?.[0] || 'U'}
             </div>
             <div>
-               <h2 className="font-bold text-lg">{user?.first_name} {user?.username && `(@${user.username})`}</h2>
-               <p className="text-sm text-gray-400">ID: {user?.telegram_id}</p>
+               <h2 className="font-bold text-xl text-white">{user?.first_name}</h2>
+               {user?.username && <p className="text-sm text-gray-400">@{user.username}</p>}
+               <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">ID: {user?.telegram_id}</p>
             </div>
          </div>
 
-         <div className="space-y-2">
-            <label className="text-xs text-gray-400 block">Дата рождения</label>
+         <div className="bg-mystic-dark/40 rounded-xl p-4 border border-white/5">
+            <div className="flex justify-between items-center mb-2">
+               <label className="text-[10px] text-gray-400 uppercase tracking-widest">Дата рождения</label>
+               {!editing && (
+                 <button onClick={() => setEditing(true)} className="text-amber-400 hover:text-amber-300 transition-colors">
+                    <Edit2 size={14} />
+                 </button>
+               )}
+            </div>
             {editing ? (
                <div className="flex gap-2">
                   <input 
                      type="date" 
                      value={newDate} 
                      onChange={(e) => setNewDate(e.target.value)}
-                     className="bg-mystic-dark border border-white/20 rounded px-2 py-1 flex-1" 
+                     className="bg-mystic-dark border border-white/20 rounded px-3 py-1.5 flex-1 text-white text-sm focus:outline-none focus:border-amber-500" 
                   />
-                  <button onClick={saveProfile} className="text-amber-400 text-sm">Сохр.</button>
+                  <button onClick={saveProfile} className="bg-amber-500 text-mystic-dark px-3 py-1 rounded text-xs font-bold">OK</button>
                </div>
             ) : (
-               <div className="flex justify-between items-center">
-                  <span>{user?.birth_date || 'Не указана'}</span>
-                  <button onClick={() => setEditing(true)} className="text-amber-400 text-sm">Изм.</button>
+               <div className="text-white font-mono text-lg tracking-wide">
+                  {user?.birth_date?.split('-').reverse().join('.') || 'Не указана'}
                </div>
             )}
          </div>
       </div>
 
       {/* Entitlements */}
-      <h3 className="font-bold text-lg mb-4">Мои ресурсы</h3>
+      <h3 className="font-bold text-lg mb-4 text-white px-2">Мои ресурсы</h3>
       <div className="space-y-3">
          {entitlements.length === 0 && (
-            <p className="text-gray-500 text-sm">У вас пока нет активных подписок или пакетов.</p>
+            <div className="glass-panel p-6 rounded-xl text-center border-dashed border-white/10">
+               <p className="text-gray-500 text-sm">Активные подписки отсутствуют</p>
+            </div>
          )}
          {entitlements.map((e, idx) => (
-            <div key={idx} className="bg-mystic-light/30 p-3 rounded-lg flex justify-between items-center">
-               <div>
-                  <div className="font-bold text-sm">{e.product_code}</div>
-                  {e.expires_at && <div className="text-xs text-gray-400">До: {new Date(e.expires_at).toLocaleDateString()}</div>}
+            <div key={idx} className="glass-panel p-4 rounded-xl flex justify-between items-center group">
+               <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+                    <CheckCircle size={18} />
+                  </div>
+                  <div>
+                     <div className="font-bold text-sm text-white">{e.product_code}</div>
+                     {e.expires_at && (
+                       <div className="text-[10px] text-gray-400">
+                         Истекает: <span className="text-gray-300">{new Date(e.expires_at).toLocaleDateString()}</span>
+                       </div>
+                     )}
+                  </div>
                </div>
-               <div className="font-mono text-amber-400">
-                  {e.is_subscription ? 'АКТИВНО' : `${e.quantity} шт.`}
+               <div className="bg-white/5 px-3 py-1 rounded-lg border border-white/10">
+                  <span className="font-mono text-amber-400 font-bold text-sm">
+                    {e.is_subscription ? 'PRO' : `${e.quantity} шт`}
+                  </span>
                </div>
             </div>
          ))}
-         <div className="mt-4 p-4 bg-white/5 rounded-lg text-center">
-           <p className="text-gray-400">История покупок скоро появится</p>
-         </div>
       </div>
 
-      <div className="mt-10 text-center space-y-4">
-         <a href="#" className="block text-gray-500 text-xs hover:text-white">Политика конфиденциальности</a>
-         <a href="#" className="block text-gray-500 text-xs hover:text-white">Поддержка</a>
-         <p className="text-[10px] text-gray-600">v1.0.0 Matrix AI</p>
+      <div className="mt-12 text-center space-y-3">
+         <div className="flex justify-center gap-6">
+            <a href="#" className="text-gray-500 text-xs hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#" className="text-gray-500 text-xs hover:text-white transition-colors">Support</a>
+         </div>
+         <p className="text-[10px] text-gray-700">v1.0.0 Matrix AI</p>
       </div>
     </div>
   );
