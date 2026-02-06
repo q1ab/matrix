@@ -28,6 +28,14 @@ const Catalog: React.FC = () => {
     try {
       const invoiceLink = await api.createInvoice(productId);
       
+      // Dev mode handling
+      if (!tg.initData) {
+          alert(`[DEV] Invoice created for ${productId}.\nLink: ${invoiceLink}\n\nSimulating successful payment...`);
+          haptic.success();
+          alert('Оплата успешна! (DEV)');
+          return;
+      }
+
       tg.openInvoice(invoiceLink, (status) => {
         if (status === 'paid') {
           haptic.success();
@@ -69,14 +77,21 @@ const Catalog: React.FC = () => {
                 )}
                 
                 <h3 className="text-xl font-bold text-white mb-2">{product.title}</h3>
-                {product.description && product.description.length > 0 && (
-                    <ul className="space-y-1 mb-4">
-                    {product.description.map((line, idx) => (
+                
+                {product.description && (
+                  <ul className="space-y-1 mb-4">
+                    {Array.isArray(product.description) ? (
+                      product.description.map((line, idx) => (
                         <li key={idx} className="text-sm text-gray-400 flex items-center">
-                        <span className="text-gold-500 mr-2">•</span> {line}
+                          <span className="text-gold-500 mr-2">•</span> {line}
                         </li>
-                    ))}
-                    </ul>
+                      ))
+                    ) : (
+                      <li className="text-sm text-gray-400 flex items-center">
+                        <span className="text-gold-500 mr-2">•</span> {String(product.description)}
+                      </li>
+                    )}
+                  </ul>
                 )}
                 
                 <div className="flex items-center justify-between mt-4">
