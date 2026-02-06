@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Destiny Matrix AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              mystic: {
+                900: '#1a0b2e',
+                800: '#2d1b4e',
+                700: '#432c7a',
+                600: '#5b3ea8',
+              },
+              gold: {
+                300: '#fde047',
+                400: '#facc15',
+                500: '#eab308',
+                600: '#ca8a04',
+              }
+            },
+            fontFamily: {
+              sans: ['Helvetica', 'Arial', 'sans-serif'],
+            },
+            animation: {
+              'spin-slow': 'spin 3s linear infinite',
+              'pulse-glow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #1a0b2e;
+        color: #f3e8ff;
+        -webkit-tap-highlight-color: transparent;
+      }
+      /* Hide scrollbar for clean UI */
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.33.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
