@@ -1,154 +1,88 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
-import { User } from '../types';
-import MysticButton from '../components/UI/MysticButton';
-import { haptic } from '../services/telegram';
+import React, { useState } from 'react';
+import { useApp } from '../context/AppContext';
+import { MysticButton } from '../components/MysticButton';
+import { api } from '../api/client';
 
-const Profile: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editDate, setEditDate] = useState('');
-  const [loading, setLoading] = useState(false);
+export const Profile = () => {
+  const { user, entitlements, refreshUser } = useApp();
+  const [editing, setEditing] = useState(false);
+  const [newDate, setNewDate] = useState(user?.birth_date || '');
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    const u = await api.getUser();
-    setUser(u);
-    setEditDate(u.birthDate || '');
-  };
-
-  const handleSave = async () => {
-    if (!editDate) return;
-    setLoading(true);
-    haptic.selection();
+  const saveProfile = async () => {
+    if(!newDate) return;
     try {
-      await api.updateProfile({ birthDate: editDate });
-      await loadUser();
-      setIsEditing(false);
-      haptic.success();
+      await api.updateMe({ birth_date: newDate });
+      await refreshUser();
+      setEditing(false);
     } catch (e) {
-      console.error(e);
-      haptic.error();
-    } finally {
-      setLoading(false);
+      alert('Error updating profile');
     }
   };
 
-  const handleHistoryClick = () => {
-    haptic.selection();
-    alert("История покупок пока пуста");
-  };
-
-  if (!user) {
-    return (
-      <div className="p-10 flex justify-center">
-        <div className="animate-spin text-4xl">🔮</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-4 pb-24 min-h-screen space-y-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Профиль</h1>
+    <div className="p-4 pb-24 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6">Профиль</h1>
 
-      {/* User Info Card */}
-      <div className="bg-mystic-800 rounded-xl p-6 border border-mystic-600 flex items-center space-x-4 shadow-lg">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-400 to-amber-600 flex items-center justify-center text-2xl font-bold text-mystic-900 shadow-[0_0_10px_rgba(250,204,21,0.3)]">
-           {user.firstName?.[0] || 'U'}
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-white">{user.firstName || 'Пользователь'}</h2>
-          <p className="text-gray-400 text-sm">@{user.username || 'unknown'}</p>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-         <div className="bg-mystic-800 p-4 rounded-xl border border-white/10 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2 opacity-5 text-4xl">🃏</div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Кредиты</p>
-            <p className="text-2xl font-bold text-white">{user.credits} <span className="text-sm font-normal text-gray-400">расклад(ов)</span></p>
+      {/* User Info */}
+      <div className="bg-mystic-purple/50 rounded-xl p-4 mb-6 border border-white/5">
+         <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold">
+               {user?.first_name?.[0] || 'U'}
+            </div>
+            <div>
+               <h2 className="font-bold text-lg">{user?.first_name} {user?.username && `(@${user.username})`}</h2>
+               <p className="text-sm text-gray-400">ID: {user?.telegram_id}</p>
+            </div>
          </div>
-         <div className="bg-mystic-800 p-4 rounded-xl border border-white/10 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-2 opacity-5 text-4xl">⭐</div>
-            <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Подписка</p>
-            <p className={`text-xl font-bold ${user.isPremium ? 'text-gold-400' : 'text-gray-300'}`}>
-              {user.isPremium ? 'PREMIUM' : 'FREE'}
-            </p>
-         </div>
-      </div>
 
-      {/* Settings Section */}
-      <div className="bg-mystic-800 rounded-xl border border-mystic-600 overflow-hidden shadow-lg">
-        <div className="p-5 border-b border-white/5">
-          <h3 className="text-gold-400 font-bold mb-4 uppercase text-xs tracking-wider">Личные данные</h3>
-          
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-gray-300">Дата рождения</span>
-            {!isEditing && (
-              <button 
-                onClick={() => { setIsEditing(true); haptic.selection(); }} 
-                className="text-gold-400 text-sm font-semibold hover:text-gold-300 transition-colors"
-              >
-                Изменить
-              </button>
+         <div className="space-y-2">
+            <label className="text-xs text-gray-400 block">Дата рождения</label>
+            {editing ? (
+               <div className="flex gap-2">
+                  <input 
+                     type="date" 
+                     value={newDate} 
+                     onChange={(e) => setNewDate(e.target.value)}
+                     className="bg-mystic-dark border border-white/20 rounded px-2 py-1 flex-1" 
+                  />
+                  <button onClick={saveProfile} className="text-amber-400 text-sm">Сохр.</button>
+               </div>
+            ) : (
+               <div className="flex justify-between items-center">
+                  <span>{user?.birth_date || 'Не указана'}</span>
+                  <button onClick={() => setEditing(true)} className="text-amber-400 text-sm">Изм.</button>
+               </div>
             )}
-          </div>
-          
-          {isEditing ? (
-             <div className="flex space-x-2 mt-2">
-               <input 
-                  type="text" 
-                  value={editDate}
-                  onChange={(e) => setEditDate(e.target.value)}
-                  className="bg-mystic-900 border border-gold-500/50 rounded-lg px-3 py-2 text-white w-full focus:outline-none focus:border-gold-400"
-                  placeholder="ДД.ММ.ГГГГ"
-               />
-               <MysticButton 
-                  onClick={handleSave} 
-                  isLoading={loading} 
-                  className="!py-2 !px-4 text-sm min-w-[60px]"
-               >
-                 OK
-               </MysticButton>
-             </div>
-          ) : (
-            <p className="text-white font-medium text-lg">{user.birthDate || 'Не указана'}</p>
-          )}
-        </div>
-
-        {/* Menu Items */}
-        <div className="divide-y divide-white/5">
-          <button 
-            onClick={handleHistoryClick}
-            className="w-full p-4 text-left text-white hover:bg-white/5 flex justify-between items-center transition-colors active:bg-white/10"
-          >
-             <div className="flex items-center space-x-3">
-               <span className="text-xl">📜</span>
-               <span>История покупок</span>
-             </div>
-             <span className="text-gray-500">›</span>
-          </button>
-          
-          <button className="w-full p-4 text-left text-white hover:bg-white/5 flex justify-between items-center transition-colors active:bg-white/10">
-             <div className="flex items-center space-x-3">
-               <span className="text-xl">💬</span>
-               <span>Поддержка</span>
-             </div>
-             <span className="text-gray-500">›</span>
-          </button>
-        </div>
+         </div>
       </div>
 
-       <div className="text-center space-y-1">
-          <p className="text-[10px] text-gray-600 uppercase tracking-widest">User ID: {user.id}</p>
-          <p className="text-[10px] text-gray-600">v1.0.0 • Destiny Matrix AI</p>
-       </div>
+      {/* Entitlements */}
+      <h3 className="font-bold text-lg mb-4">Мои ресурсы</h3>
+      <div className="space-y-3">
+         {entitlements.length === 0 && (
+            <p className="text-gray-500 text-sm">У вас пока нет активных подписок или пакетов.</p>
+         )}
+         {entitlements.map((e, idx) => (
+            <div key={idx} className="bg-mystic-light/30 p-3 rounded-lg flex justify-between items-center">
+               <div>
+                  <div className="font-bold text-sm">{e.product_code}</div>
+                  {e.expires_at && <div className="text-xs text-gray-400">До: {new Date(e.expires_at).toLocaleDateString()}</div>}
+               </div>
+               <div className="font-mono text-amber-400">
+                  {e.is_subscription ? 'АКТИВНО' : `${e.quantity} шт.`}
+               </div>
+            </div>
+         ))}
+         <div className="mt-4 p-4 bg-white/5 rounded-lg text-center">
+           <p className="text-gray-400">История покупок скоро появится</p>
+         </div>
+      </div>
+
+      <div className="mt-10 text-center space-y-4">
+         <a href="#" className="block text-gray-500 text-xs hover:text-white">Политика конфиденциальности</a>
+         <a href="#" className="block text-gray-500 text-xs hover:text-white">Поддержка</a>
+         <p className="text-[10px] text-gray-600">v1.0.0 Matrix AI</p>
+      </div>
     </div>
   );
 };
-
-export default Profile;

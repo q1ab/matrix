@@ -1,42 +1,52 @@
-export enum RoutePath {
-  ONBOARDING = '/onboarding',
-  HOME = '/app/home',
-  TAROT = '/app/tarot',
-  MATRIX = '/app/matrix',
-  CATALOG = '/app/catalog',
-  PROFILE = '/app/profile',
-}
-
 export interface User {
   id: number;
+  telegram_id: number;
   username?: string;
-  firstName?: string;
-  birthDate?: string; // DD.MM.YYYY
-  credits: number;
-  isPremium: boolean;
-  onboardingComplete: boolean;
-}
-
-export interface TarotCard {
-  id: number;
-  name: string;
-  image: string; // URL or placeholder
-  desc: string;
+  first_name?: string;
+  birth_date?: string; // YYYY-MM-DD
+  locale: string;
+  can_use_daily_card: boolean;
 }
 
 export interface Product {
-  id: string;
+  code: string;
   title: string;
-  description: string[];
-  price: number; // In Telegram Stars
+  description: string;
+  price_stars: number;
+  is_subscription: boolean;
+  subscription_period_days: number | null;
   tag?: string;
-  type: 'consumable' | 'subscription' | 'one-time';
 }
 
-export interface MatrixData {
+export interface Entitlement {
+  product_code: string;
+  quantity: number;
+  is_subscription: boolean;
+  expires_at: string | null;
+}
+
+export interface EntitlementsResponse {
+  items: Entitlement[];
+}
+
+export interface TarotResponse {
+  cards: string[];
+  result_text: string;
+}
+
+export interface MatrixResponse {
+  day: number;
+  month: number;
+  year: number;
   center: number;
-  karma: number;
-  talent: number;
-  destiny: number;
-  money: number;
+  bottom: number;
+  advice: string;
+}
+
+export interface ApiError {
+  detail: string;
+}
+
+export interface InvoiceResponse {
+  invoice_link: string;
 }

@@ -1,96 +1,99 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
-import { MatrixData } from '../types';
-import MysticButton from '../components/UI/MysticButton';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
+import { api } from '../api/client';
+import { MysticButton } from '../components/MysticButton';
+import { TelegramService } from '../services/telegram';
+import { MatrixResponse } from '../types';
 
-const Matrix: React.FC = () => {
-  const [data, setData] = useState<MatrixData | null>(null);
+export const Matrix = () => {
+  const { user } = useApp();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [matrixData, setMatrixData] = useState<MatrixResponse | null>(null);
+  const [birthDate, setBirthDate] = useState(user?.birth_date || '');
 
-  useEffect(() => {
-    // Auto-calculate if birthdate exists
-    const loadData = async () => {
-      const user = await api.getUser();
-      if (user.birthDate) {
-        setLoading(true);
-        const matrix = await api.calculateMatrix(user.birthDate);
-        setData(matrix);
-        setLoading(false);
+  const fetchMatrix = async (full: boolean) => {
+    if (!birthDate) return;
+    setLoading(true);
+    try {
+      const data = await api.getMatrix({ birth_date: birthDate, full });
+      setMatrixData(data);
+    } catch (e: any) {
+      if (e.status === 402) {
+        TelegramService.haptic.notification('error');
+        TelegramService.showConfirm(
+          full ? 'Нужна PRO подписка для полной версии. Перейти в каталог?' : 'Приобретите доступ в каталоге.',
+          (ok) => { if (ok) navigate('/catalog'); }
+        );
+      } else {
+        alert(e.detail);
       }
-    };
-    loadData();
-  }, []);
-
-  const ArcanCircle = ({ num, label, color }: { num: number, label: string, color: string }) => (
-    <div className="flex flex-col items-center">
-      <div className={`w-12 h-12 rounded-full border-2 ${color} flex items-center justify-center bg-mystic-900 z-10 font-bold text-white mb-1`}>
-        {num}
-      </div>
-      <span className="text-[10px] text-gray-400 uppercase tracking-widest">{label}</span>
-    </div>
-  );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="p-4 pb-24 min-h-screen">
-      <h1 className="text-2xl font-bold text-white mb-2 text-center">Матрица Судьбы</h1>
-      
-      {loading ? (
-        <div className="flex justify-center mt-20"><div className="animate-spin text-4xl">✡️</div></div>
-      ) : data ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 space-y-8">
-          
-          {/* Visual Representation of Matrix (Simplified Diamond) */}
-          <div className="relative h-64 w-64 mx-auto">
-            <div className="absolute inset-0 border-2 border-gold-500/20 rotate-45 transform bg-mystic-800/30 rounded-3xl" />
-            
-            {/* Top */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4">
-               <ArcanCircle num={data.talent} label="Талант" color="border-purple-400" />
-            </div>
-            {/* Right */}
-            <div className="absolute right-0 top-1/2 translate-x-4 -translate-y-1/2">
-               <ArcanCircle num={data.destiny} label="Путь" color="border-blue-400" />
-            </div>
-            {/* Bottom */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4">
-               <ArcanCircle num={data.karma} label="Карма" color="border-red-400" />
-            </div>
-            {/* Center */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-               <ArcanCircle num={data.center} label="Суть" color="border-gold-400" />
-            </div>
+    <div className="p-4 min-h-screen pb-24">
+      <h1 className="text-2xl font-bold mb-6 text-center">Матрица Судьбы</h1>
+
+      <div className="flex gap-2 mb-6">
+        <input 
+          type="date" 
+          value={birthDate}
+          onChange={(e) => setBirthDate(e.target.value)}
+          className="flex-1 bg-mystic-purple rounded-lg px-4 py-2 border border-white/10"
+        />
+      </div>
+
+      <div className="flex gap-3 mb-8">
+        <MysticButton 
+          className="flex-1" 
+          onClick={() => fetchMatrix(false)}
+          isLoading={loading}
+          disabled={!birthDate}
+        >
+          Мини (Lite)
+        </MysticButton>
+        <MysticButton 
+          variant="secondary"
+          className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 !text-white"
+          onClick={() => fetchMatrix(true)}
+          isLoading={loading}
+          disabled={!birthDate}
+        >
+          Полная (Pro)
+        </MysticButton>
+      </div>
+
+      {matrixData && (
+        <div className="animate-fade-in">
+          {/* Visual Representation */}
+          <div className="relative w-64 h-64 mx-auto mb-6">
+             <div className="absolute inset-0 border-2 border-amber-500/50 rotate-45 transform bg-mystic-light/20" />
+             <div className="absolute inset-0 flex flex-col items-center justify-between py-2 rotate-0">
+                 {/* Top (Month) */}
+                 <span className="bg-mystic-dark p-1 rounded-full text-amber-400 font-bold">{matrixData.month}</span>
+                 {/* Center */}
+                 <span className="bg-amber-500 text-mystic-dark p-2 rounded-full font-bold text-xl">{matrixData.center}</span>
+                 {/* Bottom */}
+                 <span className="bg-mystic-dark p-1 rounded-full text-red-400 font-bold">{matrixData.bottom}</span>
+             </div>
+             <div className="absolute inset-0 flex items-center justify-between px-2 rotate-0">
+                 {/* Left (Day) */}
+                 <span className="bg-mystic-dark p-1 rounded-full text-purple-400 font-bold">{matrixData.day}</span>
+                 {/* Right (Year) */}
+                 <span className="bg-mystic-dark p-1 rounded-full text-blue-400 font-bold">{matrixData.year}</span>
+             </div>
           </div>
 
-          <div className="bg-mystic-800 p-4 rounded-xl space-y-4">
-            <h3 className="font-bold text-white">Краткая расшифровка</h3>
-            <div className="text-sm text-gray-300">
-              <p><strong className="text-gold-400">Характер ({data.center}):</strong> Ваша основная энергия. Лидер, творец.</p>
-              <div className="h-px bg-white/10 my-2" />
-              <p><strong className="text-red-400">Кармический хвост ({data.karma}):</strong> То, что нужно проработать из прошлой жизни.</p>
-            </div>
-            
-            <div className="relative">
-              <div className="blur-sm select-none text-gray-500">
-                <p>Финансовый канал: Очень важная информация скрыта. Ваши деньги зависят от...</p>
-                <p>Отношения: Идеальный партнер встретится вам в месте...</p>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <MysticButton onClick={() => alert("Redirect to payment")}>
-                   Открыть полную матрицу (1290 ⭐)
-                </MysticButton>
-              </div>
-            </div>
+          <div className="bg-mystic-light/30 p-4 rounded-xl">
+            <h3 className="font-bold text-amber-400 mb-2">Совет Аркана</h3>
+            <p className="text-sm text-gray-200">{matrixData.advice}</p>
           </div>
-
-        </motion.div>
-      ) : (
-        <div className="text-center mt-10">
-          <p className="text-gray-400">Сначала заполните профиль</p>
         </div>
       )}
     </div>
   );
 };
-
-export default Matrix;

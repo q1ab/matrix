@@ -1,4 +1,5 @@
 {
-  "name": "Destiny Matrix AI",
-  "description": "Discover your destiny through Matrix of Destiny calculations and AI-powered Tarot readings. An esoteric entertainment experience."
+  "name": "Matrix AI",
+  "description": "Esoteric entertainment service featuring Tarot readings and Matrix of Destiny calculations.",
+  "requestFramePermissions": []
 }

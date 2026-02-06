@@ -1,93 +1,98 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import MysticButton from '../components/UI/MysticButton';
-import { haptic } from '../services/telegram';
-import { api } from '../services/api';
+import { api } from '../api/client';
+import { MysticButton } from '../components/MysticButton';
+import { TelegramService } from '../services/telegram';
+import { TarotResponse } from '../types';
 
-const Tarot: React.FC = () => {
+export const Tarot = () => {
   const [question, setQuestion] = useState('');
-  const [state, setState] = useState<'input' | 'shuffling' | 'result'>('input');
-  const [result, setResult] = useState<string>('');
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<TarotResponse | null>(null);
+  const navigate = useNavigate();
 
-  const startReading = async () => {
-    if (!question.trim()) return;
-    
-    haptic.impact('medium');
-    setState('shuffling');
+  const handleReading = async () => {
     setLoading(true);
-    
+    setResult(null);
     try {
-        // Call Real API
-        const response = await api.getTarotReading(question);
-        setResult(response.result);
-        haptic.success();
-        setState('result');
-    } catch (e) {
-        console.error(e);
-        haptic.error();
-        alert("Не удалось получить ответ от карт. Проверьте баланс или попробуйте позже.");
-        setState('input');
+      const res = await api.getTarot({ 
+        question: question || undefined, 
+        spread_type: '3cards' 
+      });
+      setResult(res);
+      TelegramService.haptic.notification('success');
+    } catch (e: any) {
+      if (e.status === 402) {
+        TelegramService.haptic.notification('error');
+        TelegramService.showConfirm('Недостаточно энергии. Приобрести расклад?', (ok) => {
+          if (ok) navigate('/catalog');
+        });
+      } else {
+        alert(e.detail || 'Ошибка соединения');
+      }
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="p-4 min-h-screen pb-24">
-      <h1 className="text-2xl font-bold text-white mb-6 text-center">Спроси у Таро</h1>
-
-      {state === 'input' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-          <div className="bg-mystic-800 p-4 rounded-xl border border-mystic-600">
-            <textarea
-              className="w-full bg-transparent text-white placeholder-gray-500 focus:outline-none min-h-[100px]"
-              placeholder="Напишите ваш вопрос (например: Что меня ждет в карьере?)"
+      <h1 className="text-2xl font-bold mb-4 text-center">Спроси у Карт</h1>
+      
+      {!result ? (
+        <div className="space-y-6">
+          <div className="bg-mystic-light/30 rounded-xl p-4">
+            <textarea 
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              placeholder="На чем мне сфокусироваться сегодня?..."
+              className="w-full bg-transparent text-white placeholder-gray-400 outline-none resize-none h-32 text-lg"
             />
           </div>
-          <MysticButton fullWidth onClick={startReading} disabled={!question.trim() || loading} isLoading={loading}>
-            Сделать расклад
+          
+          <MysticButton fullWidth onClick={handleReading} isLoading={loading}>
+            {loading ? 'Тасуем колоду...' : 'Получить ответ'}
           </MysticButton>
-          <p className="text-center text-xs text-gray-500">Списывается 1 кредит или 199 ⭐</p>
-        </motion.div>
-      )}
 
-      {state === 'shuffling' && (
-        <div className="flex flex-col items-center justify-center h-64 space-y-8">
-          <div className="relative w-32 h-48">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="absolute inset-0 bg-gradient-to-br from-gold-600 to-mystic-900 rounded-xl border border-white/20"
-                animate={{
-                  rotate: [0, 10, -10, 0],
-                  x: [0, 20, -20, 0],
-                  y: [0, -10, 5, 0]
-                }}
-                transition={{ repeat: Infinity, duration: 2, delay: i * 0.2 }}
-              />
-            ))}
-          </div>
-          <p className="text-gold-400 animate-pulse">Энергия карт настраивается...</p>
-        </div>
-      )}
-
-      {state === 'result' && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-          <div className="flex justify-center space-x-2">
+          <div className="grid grid-cols-3 gap-2 opacity-50">
              {[1,2,3].map(i => (
-               <div key={i} className="w-20 h-32 bg-slate-800 rounded border border-gold-500/50 bg-[url('https://picsum.photos/seed/tarot/200/300')] bg-cover"></div>
+               <div key={i} className="aspect-[2/3] bg-mystic-purple rounded border border-white/10" />
              ))}
           </div>
+
+          <p className="text-center text-xs text-gray-500 mt-4">
+             Для развлечения. Совпадения случайны.
+          </p>
+        </div>
+      ) : (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          <div className="grid grid-cols-3 gap-3">
+            {result.cards.map((card, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ rotateY: 180 }}
+                animate={{ rotateY: 0 }}
+                transition={{ delay: idx * 0.2, duration: 0.6 }}
+                className="aspect-[2/3] bg-gradient-to-br from-amber-600 to-amber-800 rounded-lg flex items-center justify-center p-2 shadow-lg text-center"
+              >
+                <span className="text-xs font-bold text-white leading-tight">{card}</span>
+              </motion.div>
+            ))}
+          </div>
           
-          <div className="bg-mystic-800/80 p-6 rounded-xl border border-gold-500/30">
-            <h3 className="text-gold-400 font-bold mb-2">Ответ Вселенной:</h3>
-            <p className="text-white leading-relaxed text-sm">{result}</p>
+          <div className="bg-mystic-light/30 rounded-xl p-5 border border-amber-500/20">
+            <h3 className="font-bold text-amber-400 mb-2">Толкование</h3>
+            <p className="text-sm leading-relaxed text-gray-200 whitespace-pre-line">
+              {result.result_text}
+            </p>
           </div>
 
-          <MysticButton fullWidth onClick={() => { setQuestion(''); setState('input'); }}>
+          <MysticButton variant="outline" fullWidth onClick={() => setResult(null)}>
             Новый вопрос
           </MysticButton>
         </motion.div>
@@ -95,5 +100,3 @@ const Tarot: React.FC = () => {
     </div>
   );
 };
-
-export default Tarot;

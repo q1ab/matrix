@@ -1,107 +1,49 @@
-// Mocking the window type for TS
-declare global {
-  interface Window {
-    Telegram: {
-      WebApp: {
-        ready: () => void;
-        expand: () => void;
-        close: () => void;
-        initData: string;
-        initDataUnsafe: any;
-        MainButton: {
-          text: string;
-          color: string;
-          textColor: string;
-          isVisible: boolean;
-          show: () => void;
-          hide: () => void;
-          onClick: (cb: () => void) => void;
-          offClick: (cb: () => void) => void;
-          showProgress: (leaveActive: boolean) => void;
-          hideProgress: () => void;
-        };
-        BackButton: {
-          isVisible: boolean;
-          show: () => void;
-          hide: () => void;
-          onClick: (cb: () => void) => void;
-          offClick: (cb: () => void) => void;
-        };
-        HapticFeedback: {
-          impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
-          notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
-          selectionChanged: () => void;
-        };
-        openInvoice: (url: string, callback?: (status: string) => void) => void;
-        themeParams: any;
-      };
-    };
-  }
-}
+const tg = (window as any).Telegram?.WebApp;
 
-// Robust fallback mock for development in browser
-const mockTg = {
-  initData: '',
-  initDataUnsafe: {},
-  ready: () => console.log('[TG Mock] ready'),
-  expand: () => console.log('[TG Mock] expand'),
-  close: () => console.log('[TG Mock] close'),
-  MainButton: {
-    text: '',
-    color: '',
-    textColor: '',
-    isVisible: false,
-    show: () => {},
-    hide: () => {},
-    onClick: () => {},
-    offClick: () => {},
-    showProgress: () => {},
-    hideProgress: () => {},
+export const TelegramService = {
+  ready: () => tg?.ready(),
+  expand: () => tg?.expand(),
+  close: () => tg?.close(),
+  initData: tg?.initData || '',
+  platform: tg?.platform || 'unknown',
+  user: tg?.initDataUnsafe?.user,
+  
+  haptic: {
+    impact: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => 
+      tg?.HapticFeedback.impactOccurred(style),
+    notification: (type: 'error' | 'success' | 'warning') => 
+      tg?.HapticFeedback.notificationOccurred(type),
+    selection: () => tg?.HapticFeedback.selectionChanged(),
   },
-  BackButton: {
-    isVisible: false,
-    show: () => {},
-    hide: () => {},
-    onClick: () => {},
-    offClick: () => {},
-  },
-  HapticFeedback: {
-    impactOccurred: () => console.log('[TG Mock] Haptic impact'),
-    notificationOccurred: () => console.log('[TG Mock] Haptic notification'),
-    selectionChanged: () => console.log('[TG Mock] Haptic selection'),
-  },
+
   openInvoice: (url: string, callback?: (status: string) => void) => {
-     console.log('[TG Mock] openInvoice:', url);
-     // Simulate successful payment in dev
-     if (callback) setTimeout(() => callback('paid'), 2000);
+    if (tg?.openInvoice) {
+      tg.openInvoice(url, (status: string) => {
+        if (callback) callback(status);
+      });
+    } else {
+      console.warn('Telegram openInvoice not available');
+      // Fallback for testing outside TG
+      if (callback) callback('paid');
+    }
   },
-  themeParams: {},
-};
 
-export const tg = window.Telegram?.WebApp || mockTg as any;
+  showConfirm: (message: string, callback: (ok: boolean) => void) => {
+    if (tg?.showConfirm) {
+      tg.showConfirm(message, callback);
+    } else {
+      callback(window.confirm(message));
+    }
+  },
 
-export const initTelegram = () => {
-  if (window.Telegram?.WebApp) {
-      tg.ready();
-      tg.expand();
+  setMainButton: (params: { text: string; isVisible: boolean; onClick: () => void }) => {
+    if (!tg?.MainButton) return;
+    tg.MainButton.text = params.text;
+    tg.MainButton.isVisible = params.isVisible;
+    // Cleanup previous listeners to avoid dupes
+    tg.MainButton.offClick(tg.MainButton.onClick); 
+    if (params.isVisible) {
+      tg.MainButton.onClick(params.onClick);
+    }
   }
-};
-
-export const haptic = {
-  impact: (style: 'light' | 'medium' | 'heavy' = 'medium') => {
-    tg.HapticFeedback?.impactOccurred(style);
-  },
-  success: () => {
-    tg.HapticFeedback?.notificationOccurred('success');
-  },
-  error: () => {
-    tg.HapticFeedback?.notificationOccurred('error');
-  },
-  selection: () => {
-    tg.HapticFeedback?.selectionChanged();
-  }
-};
-
-export const getUserData = () => {
-  return tg.initDataUnsafe?.user;
 };
