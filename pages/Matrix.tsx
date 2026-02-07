@@ -6,7 +6,7 @@ import { api } from '../api/client';
 import { MysticButton } from '../components/MysticButton';
 import { TelegramService } from '../services/telegram';
 import { MatrixResponse, Product } from '../types';
-import { Lock, Sparkles, Star, ChevronRight } from 'lucide-react';
+import { Lock, Sparkles, Star, ChevronRight, X } from 'lucide-react';
 
 // --- SVG Components ---
 
@@ -138,6 +138,12 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
   useEffect(() => {
     // Attempt to load real prices
     api.getProducts().then(setProducts).catch(() => {});
+
+    // Lock body scroll
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   const getPrice = (code: string, defaultPrice: number) => {
@@ -147,15 +153,32 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-[2px] pb-[calc(1rem+env(safe-area-inset-bottom))]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="glass-panel w-full max-w-sm rounded-3xl p-6 relative overflow-hidden border border-amber-500/20 shadow-2xl">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[60px]" />
+      <motion.div 
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 50, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="glass-panel w-full max-w-sm rounded-3xl p-6 relative border border-amber-500/20 shadow-2xl max-h-[80vh] overflow-y-auto"
+      >
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors z-20"
+        >
+          <X size={20} />
+        </button>
+
+        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[60px] pointer-events-none" />
         
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 relative z-10">
           <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto flex items-center justify-center shadow-gold mb-4 rotate-3">
              <Lock className="text-mystic-dark" size={32} />
           </div>
@@ -165,7 +188,7 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
           </p>
         </div>
 
-        <div className="space-y-3 mb-6">
+        <div className="space-y-3 mb-6 relative z-10">
           <button 
             onClick={() => onBuy('MATRIX_MINI')}
             className="w-full glass-panel p-4 rounded-xl flex items-center justify-between group active:scale-[0.98] transition-all hover:bg-white/5 border border-white/10"
@@ -205,10 +228,10 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
           </button>
         </div>
 
-        <button onClick={onClose} className="w-full text-center text-xs text-gray-500 hover:text-white transition-colors py-2">
+        <button onClick={onClose} className="w-full text-center text-xs text-gray-500 hover:text-white transition-colors py-2 relative z-10">
           Вернуться назад
         </button>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
