@@ -23,14 +23,15 @@ const AppContent = () => {
     // Configure colors via Telegram params
     const tg = (window as any).Telegram?.WebApp;
     if (tg) {
-       tg.setHeaderColor('#1a0b2e');
-       tg.setBackgroundColor('#1a0b2e');
+       // Match body background color (#0f0518) to blend status bar
+       tg.setHeaderColor('#0f0518');
+       tg.setBackgroundColor('#0f0518');
     }
   }, []);
 
   if (loading) {
     return (
-       <div className="flex h-screen items-center justify-center bg-mystic-dark">
+       <div className="flex h-[100dvh] items-center justify-center bg-mystic-dark">
          <div className="animate-spin text-amber-500 text-4xl">✨</div>
        </div>
     );
