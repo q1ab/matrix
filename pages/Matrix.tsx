@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { api } from '../api/client';
 import { MysticButton } from '../components/MysticButton';
@@ -130,6 +130,51 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
   );
 };
 
+// --- Typewriter Text Component ---
+const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
+  const words = text.split(" ");
+  
+  const container: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.04,
+        delayChildren: delay,
+      },
+    },
+  };
+
+  const child: Variants = {
+    hidden: { opacity: 0, y: 5, filter: "blur(4px)" },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: 0.4, ease: "easeOut" } 
+    },
+  };
+
+  return (
+    <motion.div
+      variants={container}
+      initial="hidden"
+      animate="visible"
+      className="text-sm text-gray-100 leading-relaxed font-light"
+    >
+      {words.map((word, index) => (
+        <React.Fragment key={index}>
+          <motion.span variants={child} className="inline-block">
+            {word}
+          </motion.span>
+          {/* Add space unless it's the last word */}
+          {index < words.length - 1 && " "} 
+        </React.Fragment>
+      ))}
+    </motion.div>
+  );
+};
+
 // --- Paywall Component ---
 
 const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onClose: () => void }) => {
@@ -156,15 +201,16 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-[2px] pb-[calc(1rem+env(safe-area-inset-bottom))]"
+      // Use items-center to center vertically, remove bottom padding specific to safe area since we are centering overlay
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
         className="glass-panel w-full max-w-sm rounded-3xl p-6 relative border border-amber-500/20 shadow-2xl max-h-[80vh] overflow-y-auto"
       >
@@ -376,9 +422,9 @@ export const Matrix = () => {
                  <Sparkles className="text-amber-400" size={16} />
                  <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">Совет Аркана</h3>
               </div>
-              <p className="text-sm text-gray-100 leading-relaxed font-light">
-                {matrixData.advice}
-              </p>
+              
+              <TypewriterText text={matrixData.advice} delay={2.7} />
+
             </motion.div>
 
             <div className="mt-8 flex justify-center">
