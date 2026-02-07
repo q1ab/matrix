@@ -26,7 +26,7 @@ export const Navigation = () => {
   if (location.pathname === '/onboarding') return null;
 
   return (
-    <div className="fixed bottom-6 left-4 right-4 z-50">
+    <div className="fixed left-4 right-4 z-50 bottom-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <div className="glass-nav rounded-2xl p-2 flex justify-around items-center shadow-2xl">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;

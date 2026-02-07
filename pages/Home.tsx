@@ -31,7 +31,7 @@ export const Home = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32 pt-4 px-4 relative overflow-hidden">
+    <div className="min-h-[100dvh] pt-[calc(1rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] px-4 relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] pointer-events-none" />
       <div className="absolute bottom-20 left-0 w-48 h-48 bg-amber-600/10 rounded-full blur-[60px] pointer-events-none" />

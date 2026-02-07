@@ -42,7 +42,7 @@ export const Catalog = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32 pt-6 px-4 relative overflow-hidden">
+    <div className="min-h-[100dvh] pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] px-4 relative overflow-hidden">
       {/* Background Decor */}
       <div className="absolute top-40 right-0 w-80 h-80 bg-amber-600/10 rounded-full blur-[100px] pointer-events-none" />
       

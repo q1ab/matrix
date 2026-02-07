@@ -17,7 +17,7 @@ const MatrixNode = ({ x, y, value, color, delay, label }: { x: number; y: number
     transition={{ delay, type: 'spring', stiffness: 200, damping: 15 }}
   >
     {/* Glow underlay */}
-    <circle cx={x} cy={y} r="25" fill={color} filter="url(#glow)" opacity="0.4" />
+    <circle cx={x} cy={y} r="25" fill={color} opacity="0.2" />
     
     {/* Main Circle */}
     <circle cx={x} cy={y} r="18" fill="rgba(15, 5, 24, 0.9)" stroke={color} strokeWidth="2" />
@@ -74,19 +74,20 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
   const left = { x: cx - r, y: cy };
 
   return (
-    <div className="w-full aspect-square max-w-[360px] mx-auto relative my-8">
-      {/* Background Rotating Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-amber-500/10 rounded-full animate-spin-slow pointer-events-none blur-3xl" />
+    <div className="w-full aspect-square max-w-[340px] mx-auto relative my-8">
+      {/* Background Rotating Gradient - Simplified for FPS */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-amber-500/10 rounded-full opacity-50 blur-3xl" />
 
       <svg viewBox="0 0 400 440" className="w-full h-full drop-shadow-2xl">
         <defs>
-          <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="8" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <linearGradient id="gradientMain" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#c084fc" />
+          </linearGradient>
+          <radialGradient id="gradientGold">
+            <stop offset="0%" stopColor="#fbbf24" />
+            <stop offset="100%" stopColor="#d97706" />
+          </radialGradient>
         </defs>
 
         {/* Diamond Shape */}
@@ -97,7 +98,7 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
           strokeWidth="1"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 1 }}
-          transition={{ duration: 2, ease: "easeInOut" }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
         />
 
         {/* Cross Lines */}
@@ -105,18 +106,18 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
         <ConnectionLine x1={top.x} y1={top.y} x2={bottom.x} y2={bottom.y} color="#fbbf24" delay={0.5} />
         
         {/* Nodes */}
-        <MatrixNode x={left.x} y={left.y} value={data.day} color="#60a5fa" delay={1.0} label="День" />
-        <MatrixNode x={top.x} y={top.y} value={data.month} color="#c084fc" delay={1.2} label="Месяц" />
-        <MatrixNode x={right.x} y={right.y} value={data.year} color="#4ade80" delay={1.4} label="Год" />
-        <MatrixNode x={bottom.x} y={bottom.y} value={data.bottom} color="#f43f5e" delay={1.6} label="Карма" />
+        <MatrixNode x={left.x} y={left.y} value={data.day} color="#60a5fa" delay={0.8} label="День" />
+        <MatrixNode x={top.x} y={top.y} value={data.month} color="#c084fc" delay={1.0} label="Месяц" />
+        <MatrixNode x={right.x} y={right.y} value={data.year} color="#4ade80" delay={1.2} label="Год" />
+        <MatrixNode x={bottom.x} y={bottom.y} value={data.bottom} color="#f43f5e" delay={1.4} label="Карма" />
         
         {/* Center Node (Bigger) */}
         <motion.g
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
-          transition={{ delay: 2.0, type: 'spring' }}
+          transition={{ delay: 1.6, type: 'spring' }}
         >
-          <circle cx={cx} cy={cy} r="35" fill="url(#gradientGold)" filter="url(#glow)" />
+          <circle cx={cx} cy={cy} r="35" fill="url(#gradientGold)" opacity="0.9" />
           <text x={cx} y={cy} dy="0.35em" textAnchor="middle" fill="#1a0b2e" fontSize="20" fontWeight="bold">
             {data.center}
           </text>
@@ -124,16 +125,6 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
             СУТЬ
           </text>
         </motion.g>
-
-        {/* Gradients */}
-        <linearGradient id="gradientMain" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#60a5fa" />
-          <stop offset="100%" stopColor="#c084fc" />
-        </linearGradient>
-        <radialGradient id="gradientGold">
-          <stop offset="0%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#d97706" />
-        </radialGradient>
       </svg>
     </div>
   );
@@ -159,7 +150,7 @@ const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onC
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 50 }}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-[2px] pb-[calc(1rem+env(safe-area-inset-bottom))]"
     >
       <div className="glass-panel w-full max-w-sm rounded-3xl p-6 relative overflow-hidden border border-amber-500/20 shadow-2xl">
         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[60px]" />
@@ -287,7 +278,7 @@ export const Matrix = () => {
   };
 
   return (
-    <div className="min-h-screen pb-32 pt-6 px-4 relative overflow-hidden">
+    <div className="min-h-[100dvh] pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] px-4 relative overflow-hidden">
        {/* Background Decor */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
 

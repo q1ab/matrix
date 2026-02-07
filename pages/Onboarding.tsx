@@ -44,7 +44,7 @@ export const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 flex flex-col justify-center items-center relative overflow-hidden bg-mystic-dark">
+    <div className="min-h-[100dvh] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] p-6 flex flex-col justify-center items-center relative overflow-hidden bg-mystic-dark">
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/20 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-600/10 rounded-full blur-[80px] pointer-events-none" />
