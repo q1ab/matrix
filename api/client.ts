@@ -79,6 +79,8 @@ class ApiClient {
         { code: 'TAROT_3', title: 'Расклад Таро', description: 'Глубокий анализ 3 карт', price_stars: 199, is_subscription: false, subscription_period_days: null, tag: 'Популярно' },
         { code: 'MATRIX_MINI', title: 'Матрица Lite', description: 'Базовый расчет энергий', price_stars: 690, is_subscription: false, subscription_period_days: null },
         { code: 'MATRIX_PRO', title: 'Матрица PRO', description: 'Полная расшифровка + PDF', price_stars: 1290, is_subscription: false, subscription_period_days: null, tag: 'Хит' },
+        { code: 'NATAL_LITE', title: 'Разбор Натальной Карты', description: 'Отношения, Деньги, Тени', price_stars: 490, is_subscription: false, subscription_period_days: null, tag: 'New' },
+        { code: 'NATAL_PRO', title: 'Натальная Карта PRO', description: 'PDF отчет + Прогноз на год', price_stars: 1290, is_subscription: false, subscription_period_days: null },
         { code: 'SUB_PRO', title: 'Подписка PRO', description: '30 дней безлимита', price_stars: 699, is_subscription: true, subscription_period_days: 30 },
       ];
     }
@@ -98,16 +100,63 @@ class ApiClient {
     }
 
     if (endpoint === '/matrix') {
-       // Simulate Paywall for PRO version
-       if (body.full) {
-         const err = { detail: 'Необходима PRO подписка' };
-         (err as any).status = 402;
-         throw err;
-       }
+       // Allow basic calculation (full=false) for free to show the teaser
+       // If full=true, require entitlement (handled by backend usually, but here we simulate unlocked content)
+       
+       const isLocked = !body.full;
+       
        return { 
          day: 7, month: 5, year: 22, center: 9, bottom: 18, 
-         advice: 'Ваша энергия требует уединения и глубокого анализа. Не спешите делиться планами, пока они не созреют.' 
+         advice: 'Ваша энергия требует уединения и глубокого анализа. Не спешите делиться планами, пока они не созреют.',
+         blocks: [
+            {
+                title: "Личный Квадрат",
+                content: isLocked ? "Скрыто. Ваши личные качества и таланты." : "Вы обладаете даром целительства и глубокой эмпатии. Люди тянутся к вам за утешением.",
+                is_locked: isLocked
+            },
+            {
+                title: "Линия Благополучия",
+                content: isLocked ? "Скрыто. Что блокирует ваши финансы." : "Деньги приходят через передачу знаний. Страх публичности блокирует поток.",
+                is_locked: isLocked
+            },
+            {
+                title: "Кармический Хвост",
+                content: isLocked ? "Скрыто. Задачи из прошлых воплощений." : "В прошлом вы злоупотребляли властью. Сейчас важно учиться служению.",
+                is_locked: isLocked
+            }
+         ]
        };
+    }
+
+    if (endpoint === '/natal') {
+      const isLocked = !body.full;
+      const noTime = body.birth_time === null || body.birth_time === "";
+      
+      return {
+        sun_sign: "Близнецы",
+        moon_sign: "Скорпион",
+        asc_sign: noTime ? null : "Лев",
+        daily_key: "Сегодня важно следить за словами, они материальны.",
+        locked: isLocked,
+        unlock_product_code: "NATAL_LITE",
+        blocks: [
+          {
+            title: "Отношения (Венера/Марс)",
+            content: isLocked ? "Скрытый контент. Эта энергия отвечает за ваш стиль любви и притяжения партнеров." : "Венера в Тельце дает вам потребность в стабильности и тактильности. Вы цените верность и комфорт.",
+            is_locked: isLocked
+          },
+          {
+            title: "Деньги и Карьера",
+            content: isLocked ? "Скрытый контент. Узнайте, где лежат ваши деньги и какие сферы принесут успех." : "Сатурн во 2 доме требует дисциплины в финансах. Успех приходит через планомерный труд в архитектуре или управлении.",
+            is_locked: isLocked
+          },
+          {
+            title: "Сильные стороны и Тени",
+            content: isLocked ? "Скрытый контент. Ваши скрытые таланты и подсознательные блоки." : "Ваша сила в коммуникации, но тень - поверхностность. Учитесь углубляться в суть вещей.",
+            is_locked: isLocked
+          }
+        ]
+      };
     }
 
     if (endpoint === '/payments/create-invoice') {
@@ -159,6 +208,14 @@ class ApiClient {
   // 7. POST /api/matrix
   getMatrix(data: { birth_date: string; full: boolean }) {
     return this.request<import('../types').MatrixResponse>('/matrix', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // 8. POST /api/natal
+  getNatal(data: { birth_date: string; birth_time?: string; city: string; full: boolean }) {
+    return this.request<import('../types').NatalResponse>('/natal', {
       method: 'POST',
       body: JSON.stringify(data),
     });

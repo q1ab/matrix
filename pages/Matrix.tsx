@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import { api } from '../api/client';
 import { MysticButton } from '../components/MysticButton';
 import { TelegramService } from '../services/telegram';
-import { MatrixResponse, Product } from '../types';
-import { Lock, Sparkles, Star, ChevronRight, X } from 'lucide-react';
+import { MatrixResponse } from '../types';
+import { Lock, Sparkles, ChevronDown, FileText } from 'lucide-react';
 
 // --- SVG Components ---
 
@@ -75,7 +74,7 @@ const MatrixVisualizer = ({ data }: { data: MatrixResponse }) => {
 
   return (
     <div className="w-full aspect-square max-w-[340px] mx-auto relative my-8">
-      {/* Background Rotating Gradient - Simplified for FPS */}
+      {/* Background Rotating Gradient */}
       <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 via-transparent to-amber-500/10 rounded-full opacity-50 blur-3xl" />
 
       <svg viewBox="0 0 400 440" className="w-full h-full drop-shadow-2xl">
@@ -175,126 +174,15 @@ const TypewriterText = ({ text, delay }: { text: string; delay: number }) => {
   );
 };
 
-// --- Paywall Component ---
-
-const PaywallOverlay = ({ onBuy, onClose }: { onBuy: (code: string) => void; onClose: () => void }) => {
-  const [products, setProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    // Attempt to load real prices
-    api.getProducts().then(setProducts).catch(() => {});
-
-    // Lock body scroll
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  const getPrice = (code: string, defaultPrice: number) => {
-    const p = products.find(i => i.code === code);
-    return p ? p.price_stars : defaultPrice;
-  };
-
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      // Use items-center to center vertically, remove bottom padding specific to safe area since we are centering overlay
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="glass-panel w-full max-w-sm rounded-3xl p-6 relative border border-amber-500/20 shadow-2xl max-h-[80vh] overflow-y-auto"
-      >
-        {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors z-20"
-        >
-          <X size={20} />
-        </button>
-
-        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-[60px] pointer-events-none" />
-        
-        <div className="text-center mb-6 relative z-10">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto flex items-center justify-center shadow-gold mb-4 rotate-3">
-             <Lock className="text-mystic-dark" size={32} />
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Энергия закрыта</h2>
-          <p className="text-gray-300 text-sm">
-            Чтобы построить матрицу, необходим энергетический обмен. Выберите уровень доступа:
-          </p>
-        </div>
-
-        <div className="space-y-3 mb-6 relative z-10">
-          <button 
-            onClick={() => onBuy('MATRIX_MINI')}
-            className="w-full glass-panel p-4 rounded-xl flex items-center justify-between group active:scale-[0.98] transition-all hover:bg-white/5 border border-white/10"
-          >
-             <div className="flex items-center gap-3">
-               <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400">
-                 <Sparkles size={18} />
-               </div>
-               <div className="text-left">
-                 <div className="font-bold text-white text-sm">MINI Доступ</div>
-                 <div className="text-[10px] text-gray-400">Базовая матрица</div>
-               </div>
-             </div>
-             <div className="text-white font-bold text-sm bg-white/10 px-3 py-1 rounded-lg">
-                {getPrice('MATRIX_MINI', 690)} ⭐
-             </div>
-          </button>
-
-          <button 
-            onClick={() => onBuy('MATRIX_PRO')}
-            className="w-full p-4 rounded-xl flex items-center justify-between group active:scale-[0.98] transition-all relative overflow-hidden border border-amber-500/50"
-          >
-             <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-amber-600/20 group-hover:opacity-100 transition-opacity" />
-             
-             <div className="flex items-center gap-3 relative z-10">
-               <div className="p-2 bg-amber-500 rounded-lg text-mystic-dark shadow-gold">
-                 <Star size={18} fill="currentColor" />
-               </div>
-               <div className="text-left">
-                 <div className="font-bold text-white text-sm">PRO Full</div>
-                 <div className="text-[10px] text-amber-200">Полная расшифровка + PDF</div>
-               </div>
-             </div>
-             <div className="text-amber-400 font-bold text-sm bg-mystic-dark/50 px-3 py-1 rounded-lg border border-amber-500/30 relative z-10">
-                {getPrice('MATRIX_PRO', 1290)} ⭐
-             </div>
-          </button>
-        </div>
-
-        <button onClick={onClose} className="w-full text-center text-xs text-gray-500 hover:text-white transition-colors py-2 relative z-10">
-          Вернуться назад
-        </button>
-      </motion.div>
-    </motion.div>
-  );
-};
-
 
 // --- Main Page Component ---
 
 export const Matrix = () => {
   const { user, refreshUser } = useApp();
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [matrixData, setMatrixData] = useState<MatrixResponse | null>(null);
   const [birthDate, setBirthDate] = useState(user?.birth_date || '');
-  const [showPaywall, setShowPaywall] = useState(false);
-  const [pendingFull, setPendingFull] = useState(false);
 
-  // Auto-save birthdate if changed
   const saveBirthDate = async () => {
     if (birthDate && birthDate !== user?.birth_date) {
       await api.updateMe({ birth_date: birthDate });
@@ -302,25 +190,18 @@ export const Matrix = () => {
     }
   };
 
-  const fetchMatrix = async (full: boolean) => {
+  const fetchMatrix = async (full: boolean = false) => {
     if (!birthDate) return;
     setLoading(true);
-    setPendingFull(full);
     
     try {
       await saveBirthDate();
       const data = await api.getMatrix({ birth_date: birthDate, full });
       setMatrixData(data);
-      setShowPaywall(false);
       TelegramService.haptic.notification('success');
     } catch (e: any) {
-      if (e.status === 402) {
-        TelegramService.haptic.notification('warning');
-        setShowPaywall(true);
-      } else {
         TelegramService.haptic.notification('error');
         TelegramService.showConfirm('Ошибка: ' + e.detail, () => {});
-      }
     } finally {
       setLoading(false);
     }
@@ -333,10 +214,8 @@ export const Matrix = () => {
         if (status === 'paid') {
           TelegramService.haptic.notification('success');
           await refreshUser();
-          setShowPaywall(false);
-          // Retry original request (Mini or Pro depends on what they bought, 
-          // but usually we retry the one they clicked. For simplicity retry what was pending)
-          fetchMatrix(code === 'MATRIX_PRO'); 
+          // Re-fetch with full=true to show unlocked content
+          fetchMatrix(true);
         } else {
           TelegramService.haptic.notification('error');
         }
@@ -346,16 +225,22 @@ export const Matrix = () => {
     }
   };
 
+  const isLocked = matrixData?.blocks?.some(b => b.is_locked);
+
   return (
     <div className="min-h-[100dvh] pt-[calc(1.5rem+env(safe-area-inset-top))] pb-[calc(8rem+env(safe-area-inset-bottom))] px-4 relative overflow-hidden">
        {/* Background Decor */}
        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-lg h-96 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
 
-      <h1 className="text-2xl font-bold mb-8 text-center text-white drop-shadow-md">Матрица Судьбы</h1>
+      <h1 className="text-2xl font-bold mb-8 text-center text-white drop-shadow-md flex items-center justify-center gap-2">
+        <Grid size={24} className="text-amber-200" />
+        <span>Матрица Судьбы</span>
+      </h1>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!matrixData ? (
           <motion.div 
+            key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
@@ -378,32 +263,19 @@ export const Matrix = () => {
                </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              <MysticButton 
-                variant="secondary"
-                className="w-full" 
-                onClick={() => fetchMatrix(false)}
-                isLoading={loading && !pendingFull}
-                disabled={!birthDate}
-              >
-                Рассчитать Lite (Базовая)
-              </MysticButton>
-              
-              <MysticButton 
-                className="w-full shadow-neon"
-                onClick={() => fetchMatrix(true)}
-                isLoading={loading && pendingFull}
-                disabled={!birthDate}
-              >
-                <div className="flex items-center justify-center gap-2">
-                   <span>Рассчитать PRO (Полная)</span>
-                   <Lock size={14} className="opacity-70" />
-                </div>
-              </MysticButton>
-            </div>
+            <MysticButton 
+              className="w-full shadow-neon" 
+              size="lg"
+              onClick={() => fetchMatrix(false)}
+              isLoading={loading}
+              disabled={!birthDate}
+            >
+              Рассчитать Матрицу
+            </MysticButton>
           </motion.div>
         ) : (
           <motion.div 
+            key="result"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="w-full max-w-md mx-auto"
@@ -413,41 +285,97 @@ export const Matrix = () => {
 
             {/* Advice Card */}
             <motion.div 
-              initial={{ y: 50, opacity: 0 }}
+              initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 2.5, type: 'spring' }}
-              className="glass-panel rounded-2xl p-6 border-l-4 border-l-amber-500 relative mt-6"
+              transition={{ delay: 2.5 }}
+              className="glass-panel rounded-2xl p-5 border-l-4 border-l-amber-500 relative mt-6 mb-6"
             >
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-2">
                  <Sparkles className="text-amber-400" size={16} />
-                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">Совет Аркана</h3>
+                 <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest">Главный Аркан</h3>
               </div>
-              
               <TypewriterText text={matrixData.advice} delay={2.7} />
-
             </motion.div>
 
-            <div className="mt-8 flex justify-center">
+            {/* Analysis Blocks */}
+            <div className="space-y-4 mb-24">
+              {matrixData.blocks?.map((block, idx) => (
+                <motion.div 
+                  key={idx}
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 2.8 + idx * 0.1 }}
+                  className={`glass-panel rounded-xl p-5 relative overflow-hidden border ${block.is_locked ? 'border-white/5' : 'border-amber-500/30'}`}
+                >
+                  <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
+                    {block.is_locked && <Lock size={12} className="text-amber-500" />}
+                    {block.title}
+                  </h3>
+                  
+                  <div className="relative">
+                      <p className={`text-sm text-gray-300 leading-relaxed ${block.is_locked ? 'blur-sm select-none opacity-50' : ''}`}>
+                        {block.content}
+                        {block.is_locked && " lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+                      </p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Locked CTA - Sticky Bottom */}
+            {isLocked && (
+              <div className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-0 right-0 p-4 bg-gradient-to-t from-mystic-dark via-mystic-dark/95 to-transparent z-40">
+                 <div className="max-w-md mx-auto space-y-3">
+                   <MysticButton 
+                     fullWidth 
+                     onClick={() => handleBuy('MATRIX_MINI')}
+                     className="shadow-gold border border-amber-500/50"
+                   >
+                     <div className="flex flex-col items-center leading-tight">
+                       <span className="text-sm font-bold">Разблокировать разбор</span>
+                       <span className="text-[10px] opacity-80">690 ⭐</span>
+                     </div>
+                   </MysticButton>
+
+                   <button 
+                     onClick={() => handleBuy('MATRIX_PRO')}
+                     className="w-full bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl py-3 flex items-center justify-between px-4 transition-colors group backdrop-blur-md"
+                   >
+                      <div className="flex items-center gap-3 text-left">
+                         <div className="p-2 bg-purple-500/20 rounded-lg text-purple-300">
+                           <FileText size={18} />
+                         </div>
+                         <div>
+                           <div className="text-xs font-bold text-white">PRO Отчет (PDF)</div>
+                           <div className="text-[9px] text-gray-400">Полный файл + прогноз</div>
+                         </div>
+                      </div>
+                      <div className="text-amber-400 font-bold text-sm bg-black/20 px-2 py-1 rounded">
+                         1290 ⭐
+                      </div>
+                   </button>
+                 </div>
+              </div>
+            )}
+
+            {!isLocked && (
+               <div className="text-center text-amber-400 text-sm font-bold py-4">
+                  ✨ Полный доступ активирован
+               </div>
+            )}
+
+            <div className="flex justify-center pb-8 mt-4">
                <button 
                  onClick={() => setMatrixData(null)}
                  className="text-gray-500 text-xs uppercase tracking-widest hover:text-white transition-colors flex items-center gap-1"
                >
-                 <ChevronRight className="rotate-180" size={14} /> Рассчитать заново
+                 <ChevronDown className="rotate-90" size={12} /> Изменить дату
                </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Paywall Overlay */}
-      <AnimatePresence>
-        {showPaywall && (
-          <PaywallOverlay 
-            onBuy={handleBuy} 
-            onClose={() => setShowPaywall(false)} 
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 };
+import { Grid } from 'lucide-react';

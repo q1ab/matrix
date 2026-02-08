@@ -34,6 +34,12 @@ export interface TarotResponse {
   result_text: string;
 }
 
+export interface NatalBlock {
+  title: string;
+  content: string;
+  is_locked: boolean;
+}
+
 export interface MatrixResponse {
   day: number;
   month: number;
@@ -41,6 +47,17 @@ export interface MatrixResponse {
   center: number;
   bottom: number;
   advice: string;
+  blocks?: NatalBlock[];
+}
+
+export interface NatalResponse {
+  sun_sign: string;
+  moon_sign: string;
+  asc_sign: string | null;
+  daily_key: string;
+  blocks: NatalBlock[];
+  locked: boolean;
+  unlock_product_code: string;
 }
 
 export interface ApiError {

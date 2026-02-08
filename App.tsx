@@ -8,6 +8,7 @@ import { Onboarding } from './pages/Onboarding';
 import { Home } from './pages/Home';
 import { Tarot } from './pages/Tarot';
 import { Matrix } from './pages/Matrix';
+import { Natal } from './pages/Natal';
 import { Catalog } from './pages/Catalog';
 import { Profile } from './pages/Profile';
 import { Navigation } from './components/Navigation';
@@ -47,6 +48,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/natal" element={<Natal />} />
         <Route path="/tarot" element={<Tarot />} />
         <Route path="/matrix" element={<Matrix />} />
         <Route path="/catalog" element={<Catalog />} />
